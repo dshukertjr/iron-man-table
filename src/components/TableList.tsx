@@ -1,20 +1,34 @@
 import React from 'react';
 import { useSupabaseTables } from '../hooks/useSupabaseTables';
 
-interface TableListProps {
-  onTableDrag?: (tableName: string, x: number, y: number) => void;
+export interface TableObject {
+  id: string;
+  name: string;
+  x: number;
+  y: number;
+  isDragging: boolean;
 }
 
-const TableList: React.FC<TableListProps> = ({ onTableDrag }) => {
-  const { tables, loading, error } = useSupabaseTables();
+interface TableListProps {
+  tables: TableObject[];
+  onTableAdd: (tableName: string) => void;
+}
+
+const TableList: React.FC<TableListProps> = ({ tables, onTableAdd }) => {
+  const { tables: availableTables, loading, error } = useSupabaseTables();
 
   // For demo purposes, if no tables are found, show some example tables
-  const displayTables = tables.length > 0 ? tables : ['users', 'posts', 'comments', 'products'];
+  const displayTables = availableTables.length > 0 ? availableTables : ['users', 'posts', 'comments', 'products'];
+
+  // Filter out tables that are already on the canvas
+  const unusedTables = displayTables.filter(
+    tableName => !tables.some(t => t.name === tableName)
+  );
 
   return (
-    <div className="absolute left-0 top-0 h-full w-20 bg-gray-900 bg-opacity-80 border-r border-gray-700 flex flex-col items-center py-4 gap-4 overflow-y-auto">
-      <h3 className="text-white text-xs font-semibold mb-2 rotate-90 origin-center whitespace-nowrap">
-        Tables
+    <div className="absolute left-0 right-0 top-0 h-20 bg-gray-900 bg-opacity-80 border-b border-gray-700 flex items-center px-4 gap-4 overflow-x-auto">
+      <h3 className="text-white text-sm font-semibold whitespace-nowrap">
+        Tables:
       </h3>
       
       {loading && (
@@ -22,17 +36,17 @@ const TableList: React.FC<TableListProps> = ({ onTableDrag }) => {
       )}
       
       {error && (
-        <div className="text-red-400 text-xs text-center px-2">
-          {error}
+        <div className="text-red-400 text-xs">
+          Using example tables
         </div>
       )}
       
-      {!loading && displayTables.map((table, index) => (
-        <div
+      {!loading && unusedTables.map((table) => (
+        <button
           key={table}
-          className="w-14 h-14 bg-blue-600 hover:bg-blue-700 rounded-lg flex items-center justify-center cursor-move transition-colors shadow-lg group"
-          data-table={table}
-          title={table}
+          onClick={() => onTableAdd(table)}
+          className="w-14 h-14 bg-blue-600 hover:bg-blue-700 rounded-lg flex items-center justify-center cursor-pointer transition-colors shadow-lg group flex-shrink-0"
+          title={`Add ${table} table`}
         >
           {/* Table Icon SVG */}
           <svg
@@ -51,11 +65,17 @@ const TableList: React.FC<TableListProps> = ({ onTableDrag }) => {
           </svg>
           
           {/* Table name tooltip on hover */}
-          <div className="absolute left-full ml-2 px-2 py-1 bg-gray-800 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap">
+          <div className="absolute top-full mt-2 px-2 py-1 bg-gray-800 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap">
             {table}
           </div>
-        </div>
+        </button>
       ))}
+      
+      {!loading && unusedTables.length === 0 && (
+        <div className="text-gray-400 text-sm">
+          All tables are on the canvas
+        </div>
+      )}
     </div>
   );
 };
