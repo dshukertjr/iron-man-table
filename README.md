@@ -30,8 +30,8 @@ An interactive web application that uses hand tracking to manipulate and join da
 1. Clone the repository:
 
 ```bash
-git clone https://github.com/yourusername/handtracking.git
-cd handtracking
+git clone https://github.com/dshukertjr/iron-man-table.git
+cd iron-man-table
 ```
 
 2. Install dependencies:
